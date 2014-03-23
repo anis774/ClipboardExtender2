@@ -1,0 +1,6 @@
+﻿#setValue
+import clr
+clr.AddReference("System.Web")
+from System.Web import HttpUtility
+
+cbex.Out = HttpUtility.HtmlEncode(cbex.Values[0]).Replace("  ","　")

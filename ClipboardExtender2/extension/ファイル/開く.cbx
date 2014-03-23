@@ -1,0 +1,20 @@
+#coding: UTF-8
+import clr
+clr.AddReference("mscorlib")
+clr.AddReference("system")
+clr.AddReference("system.windows.forms")
+
+from System import Exception, String, StringSplitOptions
+from System.Collections.Generic import List
+from System.Diagnostics import Process
+from System.IO import File
+from System.Windows.Forms import MessageBox
+
+for value in cbex.Values:
+	for file in value.Split(List[String](["\r\n"]).ToArray(), StringSplitOptions.RemoveEmptyEntries):
+		try:
+			Process.Start(file)
+		except Exception, ex:
+			MessageBox.Show(file + "\r\n\r\n" + ex.ToString())
+
+cbex.IsPasteCancel = True

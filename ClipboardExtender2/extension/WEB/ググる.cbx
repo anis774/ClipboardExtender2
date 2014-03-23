@@ -1,0 +1,16 @@
+﻿#setValue
+import clr
+clr.AddReference("System")
+clr.AddReference("System.Web")
+#clr.AddReference("System.Diagnostics")
+from System.Web import HttpUtility
+from System.Diagnostics import Process
+
+query = "http://www.google.co.jp/search?q="
+word = ""
+for value in cbex.Values:
+	word += value.Replace("\r\n", " ") + " "
+
+Process.Start(query + HttpUtility.UrlEncode(word))
+
+cbex.IsPasteCancel = True

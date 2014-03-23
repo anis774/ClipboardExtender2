@@ -1,0 +1,5 @@
+﻿import clr
+clr.AddReference("mscorlib")
+from System.IO import Path
+
+cbex.Out = Path.GetFileName(cbex.Values[0])

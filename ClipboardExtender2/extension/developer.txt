@@ -1,0 +1,29 @@
+﻿拡張機能を作成する方法には2通りあります。
+IronPythonでスクリプトを記述する方法と、標準入力から文字列を受け取り標準出力へ処理結果を返すプログラムとして作成する方法です。
+複数ファイルからなる拡張を作りやすくする為に隠しファイル、"."で始まるファイルやディレクトリは読み込まないようになっています。
+
+【IronPython2.6スクリプト】
+・ファイルの拡張子が".cbx"のIronPython2.6スクリプトにはExtensionArgsオブジェクトが渡されます。
+　このオブジェクトには変数cbexからアクセス出来ます。このオブジェクトに対して操作をすることで拡張機能を実装します。
+　
+	<ExtensionArgs メンバ>
+	public string[] Values
+		ClipboardExtenderから選択された文字列を取得します。選択された文字列を上から順番に格納しています。
+	public string[] Lines
+		Valuesの全項目の各行を上から順番に格納しています。
+	public object Out
+		ClipboardExtenderに返す値を設定します。ClipboardExtenderはこのプロパティに設定されたオブジェクトのToString()メソッドを呼び出してペーストに利用します。
+	public string Version
+		ClipboardExtenderのバージョンを取得します。
+	public bool IsPasteCancel
+		ClipboardExtenderが受け取った値のペーストを実行しないかどうかを設定します。Falseが設定された状態で渡されます。
+	public void ChangeProgress(int max, int value)
+		処理の進捗をプログレスバーに表示します。
+	public void ChangeStatusText(string statusText)
+		処理の状況をステータスバーに表示します。
+        
+【実行ファイル、その他のスクリプト】
+・拡張子が".exe"の実行ファイル、または拡張子への関連付けが設定されたスクリプトの場合は標準入力に文字列が渡されます。標準出力で処理結果を返して下さい。
+・入出力の文字コードはcp932(Shift-Jis)です。
+・空文字列を出力するとペーストされません。
+・実行時の作業ディレクトリはスクリプトが置かれているディレクトリです。

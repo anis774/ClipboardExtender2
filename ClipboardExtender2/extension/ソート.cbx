@@ -1,0 +1,17 @@
+#coding: UTF-8
+import clr
+clr.AddReference("mscorlib")
+
+from System.Collections.Generic import List
+from System import String, StringSplitOptions
+
+lines = List[String]()
+
+for value in cbex.Values:
+	for line in value.Split(List[String](["\r\n"]).ToArray(), StringSplitOptions.None):
+		lines.Add(line)
+		
+lines.Sort()
+
+for line in lines:
+	cbex.Out += line + "\r\n"

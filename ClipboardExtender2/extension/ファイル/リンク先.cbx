@@ -1,0 +1,14 @@
+﻿import clr
+
+clr.AddReference("mscorlib")
+from System import Activator, Environment, String, Type
+from System.Reflection import BindingFlags
+
+for path in cbex.Lines:
+	shellObject = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"))
+	shortcut = shellObject.CreateShortcut(path)
+	targetPath = shortcut.GetType().InvokeMember("TargetPath", BindingFlags.GetProperty, None, shortcut, None)
+	if cbex.Out:
+		cbex.Out += Environment.NewLine + targetPath
+	else:
+		cbex.Out += targetPath
