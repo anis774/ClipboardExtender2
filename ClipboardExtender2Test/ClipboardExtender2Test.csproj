@@ -35,8 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Livet">
-      <HintPath>..\..\..\Visual Studio 2013\Projects\ClipboardExtender2\ClipboardExtender2\InfrastructureAssemblies\Livet.dll</HintPath>
+    <Reference Include="Livet, Version=1.1.0.0, Culture=neutral, PublicKeyToken=b0b1d3f711ef38cb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ClipboardExtender2\InfrastructureAssemblies\Livet.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
