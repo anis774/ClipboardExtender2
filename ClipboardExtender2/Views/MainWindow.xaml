@@ -95,9 +95,12 @@
             <TextBox Grid.Row="0" Text="hogehogehogehoge"/>
 
             <ListBox x:Name="mainListBox" Grid.Row="1"
-			    ItemsSource="{Binding ClipbordHistory}"
-			    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-			    HorizontalContentAlignment="Stretch" IsSynchronizedWithCurrentItem="True" SelectedItem="{Binding SeletedHistoryItem}">
+                     ItemsSource="{Binding ClipbordHistory}"
+			         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+			         HorizontalContentAlignment="Stretch"
+                     IsSynchronizedWithCurrentItem="True" SelectionMode="Extended"
+                     SelectedItem="{Binding SelectedHistoryItem}"
+                     SelectionChanged="mainListBox_SelectionChanged">
                 <ListBox.InputBindings>
                     <KeyBinding Key="Enter" Command="{Binding PasteCommand}"/>
                     <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding PasteCommand}"/>

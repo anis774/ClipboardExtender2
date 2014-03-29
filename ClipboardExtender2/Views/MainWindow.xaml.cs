@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using VM = ClipboardExtender2.ViewModels;
+using Livet.Commands;
 
 namespace ClipboardExtender2.Views
 {
@@ -46,18 +47,35 @@ namespace ClipboardExtender2.Views
 
 
 
-        private void AddExtensionMenuItem(ItemCollection contextMenuItems, IEnumerable<ClipboardExtender2.Models.ExtensionTreeItem> extensionItems)
+        private bool AddExtensionMenuItem(ItemCollection contextMenuItems, IEnumerable<ClipboardExtender2.Models.ExtensionTreeItem> extensionItems)
         {
+            bool r = false;
+
             foreach (var item in extensionItems)
             {
+                r = true;
+
                 var menuItem = new MenuItem(){
                     Header = item.Name,
                 };
 
                 contextMenuItems.Add(menuItem);
 
-                this.AddExtensionMenuItem(menuItem.Items, item.Items);
+                if (!this.AddExtensionMenuItem(menuItem.Items, item.Items))
+                {
+                    menuItem.Command = new ViewModelCommand(() =>
+                    {
+                        ((VM.MainWindowViewModel)this.DataContext).ExtensionPaste(item.Extension);
+                    });
+                }
             }
+
+            return r;
+        }
+
+        private void mainListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ((VM.MainWindowViewModel)this.DataContext).SelectedHistoryItems = this.mainListBox.SelectedItems.Cast<string>().ToArray();
         }
     }
 }

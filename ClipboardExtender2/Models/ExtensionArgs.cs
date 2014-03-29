@@ -9,6 +9,7 @@ namespace ClipboardExtender
         object out_ = "";
 
         public string[] Values { set; get; }
+
         public object Out
         {
             set
@@ -20,6 +21,7 @@ namespace ClipboardExtender
                 return this.out_;
             }
         }
+
         public string Version
         {
             get
@@ -27,6 +29,7 @@ namespace ClipboardExtender
                 return string.Empty; //Application.ProductVersion;
             }
         }
+
         public bool IsPasteCancel { set; get; }
 
         public override string ToString()

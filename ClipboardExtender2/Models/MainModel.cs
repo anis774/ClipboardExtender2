@@ -7,6 +7,7 @@ using System.Windows.Interop;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Reactive.Linq;
+using ClipboardExtender;
 
 using Livet;
 
@@ -179,6 +180,14 @@ namespace ClipboardExtender2.Models
 
 
 
+        /// <summary>
+        /// 選択されているクリップボードの履歴(複数)
+        /// 読取専用。変更しても表示に影響しない。
+        /// </summary>
+        public string[] SelectedHistoryItems { private get; set; }
+
+
+
         private ObservableSynchronizedCollection<ExtensionTreeItem> _ExtensionItems = new ObservableSynchronizedCollection<ExtensionTreeItem>();
         /// <summary>
         /// 読み込まれた拡張をツリー構造で保持
@@ -206,6 +215,25 @@ namespace ClipboardExtender2.Models
             if (h != null)
             {
                 h(this, EventArgs.Empty);
+            }
+        }
+
+
+
+        public void ExtensionPaste(IExtension extension)
+        {
+            ExtensionArgs args = new ExtensionArgs()
+            {
+                Values = this.SelectedHistoryItems
+            };
+
+            extension.Run(args);
+            this.History.Insert(0, args.Out.ToString());
+            this.SelectedHistoryItem = args.Out.ToString();
+
+            if (!args.IsPasteCancel)
+            {
+                this.Paste();
             }
         }
         

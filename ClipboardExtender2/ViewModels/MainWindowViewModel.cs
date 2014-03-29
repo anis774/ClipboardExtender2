@@ -12,6 +12,7 @@ using Livet.EventListeners;
 using Livet.Messaging.Windows;
 
 using ClipboardExtender2.Models;
+using ClipboardExtender;
 
 namespace ClipboardExtender2.ViewModels
 {
@@ -66,6 +67,9 @@ namespace ClipboardExtender2.ViewModels
             this.model = new Model();
             this.ClipbordHistory = new DispatcherCollection<string>(this.model.History, DispatcherHelper.UIDispatcher);
             this.ExtensionItems = new DispatcherCollection<ExtensionTreeItem>(this.model.ExtensionItems, DispatcherHelper.UIDispatcher);
+
+            this.CompositeDisposable.Add(
+                new PropertyChangedEventListener(this.model, this.model_PropertyChanged));
 
             this.CompositeDisposable.Add(
                 new EventListener<EventHandler>(
@@ -124,8 +128,8 @@ namespace ClipboardExtender2.ViewModels
         #endregion
 
 
-        #region SeletedHistoryItem変更通知プロパティ
-        public string SeletedHistoryItem
+        #region SelectedHistoryItem変更通知プロパティ
+        public string SelectedHistoryItem
         {
             get
             {
@@ -137,7 +141,6 @@ namespace ClipboardExtender2.ViewModels
                 if (this.model == null || this.model.SelectedHistoryItem == value)
                     return;
                 this.model.SelectedHistoryItem = value;
-                RaisePropertyChanged();
             }
         }
         #endregion
@@ -225,6 +228,35 @@ namespace ClipboardExtender2.ViewModels
             this.model.Paste();
         }
         #endregion
+
+
+        public string[] SelectedHistoryItems
+        {
+            set
+            {
+                this.model.SelectedHistoryItems = value;
+            }
+        }
+
+
+
+        public void ExtensionPaste(IExtension extension)
+        {
+            this.model.ExtensionPaste(extension);
+        }
+
+
+
+        void model_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "SelectedHistoryItem":
+                    this.RaisePropertyChanged(e.PropertyName);
+                    break;
+            }
+        }
+
 
 
         private void model_HotKeyPushed(object sender, EventArgs e)
