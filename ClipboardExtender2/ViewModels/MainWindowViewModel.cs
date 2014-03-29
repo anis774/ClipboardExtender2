@@ -79,6 +79,12 @@ namespace ClipboardExtender2.ViewModels
                     _ => this.model.WindowClose -= _,
                     this.model_WindowClose));
 
+            this.CompositeDisposable.Add(
+                new EventListener<EventHandler>(
+                    _ => this.model.ExtensionLoaded += _,
+                    _ => this.model.ExtensionLoaded -= _,
+                    this.model_ExtensionLoaded));
+
             this.model.Initialize(new System.Windows.Interop.WindowInteropHelper(App.Current.MainWindow).Handle);
         }
 
@@ -227,10 +233,21 @@ namespace ClipboardExtender2.ViewModels
             Messenger.Raise(new WindowActionMessage(WindowAction.Active, "active"));
         }
 
+
+
         public void model_WindowClose(object sender, EventArgs e)
         {
             Messenger.Raise(new WindowActionMessage(WindowAction.Minimize, "minimize"));
         }
+
+
+
+        public void model_ExtensionLoaded(object sender, EventArgs e)
+        {
+            Messenger.Raise(new InteractionMessage("extensionLoaded"));
+        }
+
+
 
         protected override void Dispose(bool disposing)
         {

@@ -92,6 +92,12 @@ namespace ClipboardExtender2.Models
                     extensionTreeItems.Add(newExtensionTreeItem);
                 }
             }
+
+            var h = this.ExtensionLoaded;
+            if (h != null)
+            {
+                h(this, EventArgs.Empty);
+            }
         }
 
         #region プロパティ
@@ -290,6 +296,7 @@ namespace ClipboardExtender2.Models
 
         public event EventHandler HotKeyPushed;
         public event EventHandler WindowClose;
+        public event EventHandler ExtensionLoaded;
         
         #endregion
 

@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using VM = ClipboardExtender2.ViewModels;
 
 namespace ClipboardExtender2.Views
 {
@@ -32,6 +33,31 @@ namespace ClipboardExtender2.Views
             // グローバリゼーションテスト用
             // Properties.Resources.Culture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
             InitializeComponent();
+        }
+
+
+
+        public void ExtensionLoaded()
+        {
+            var extensionItems = ((VM.MainWindowViewModel)this.DataContext).ExtensionItems;
+            this.extensionContextMenu.Items.Clear();
+            this.AddExtensionMenuItem(this.extensionContextMenu.Items, extensionItems);
+        }
+
+
+
+        private void AddExtensionMenuItem(ItemCollection contextMenuItems, IEnumerable<ClipboardExtender2.Models.ExtensionTreeItem> extensionItems)
+        {
+            foreach (var item in extensionItems)
+            {
+                var menuItem = new MenuItem(){
+                    Header = item.Name,
+                };
+
+                contextMenuItems.Add(menuItem);
+
+                this.AddExtensionMenuItem(menuItem.Items, item.Items);
+            }
         }
     }
 }
