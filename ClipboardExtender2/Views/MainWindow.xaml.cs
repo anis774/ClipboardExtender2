@@ -13,6 +13,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using VM = ClipboardExtender2.ViewModels;
 using Livet.Commands;
+using System.Reactive.Linq;
+using System.Reactive.Disposables;
 
 namespace ClipboardExtender2.Views
 {
@@ -29,18 +31,58 @@ namespace ClipboardExtender2.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        CompositeDisposable rxDisposables = new CompositeDisposable();
+
+        private VM.MainWindowViewModel _VM;
+        private VM.MainWindowViewModel VM
+        {
+            get
+            {
+                if (this._VM == null)
+                {
+                    this._VM = this.DataContext as VM.MainWindowViewModel;
+                }
+
+                return this._VM;
+            }
+        }
+
         public MainWindow()
         {
             // グローバリゼーションテスト用
             // Properties.Resources.Culture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
             InitializeComponent();
-        }
+            
+            // ホットキーによってウィンドウがアクティブになったらリストボックスの先頭のアイテムにフォーカスを当てる。
+            // 単にActivatedのタイミングで制御を行うとホットキーの修飾キー(Ctrl+Shift)が押されているためにおかしな動作をする
+            // そこでホットキーによってアクティブになってから修飾キーが離されたタイミングで制御を行なう
+            this.rxDisposables.Add(
+                Observable.FromEventPattern<EventArgs>(this, "Activated")
+                    .Where(_ => Keyboard.Modifiers.HasFlag(ModifierKeys.Control) && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))     // Ctrl、Shiftが押されていればホットキーによるものとする
+                    .Select(_ => _.EventArgs)
+                    .Merge(Observable.FromEventPattern<KeyEventArgs>(this, "KeyUp")
+                        .Where(_ => new[] { Key.LeftCtrl, Key.LeftShift, Key.RightCtrl, Key.RightShift }.Contains(_.EventArgs.Key)
+                            && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control) && !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))    // CtrlとShiftのKeyUpは別々に上がってくるので最後に上がってきたイベントのみを通す
+                        .Select(_ => _.EventArgs))
+                    .Scan((before, after) => before != null && !(before is KeyEventArgs) && after is KeyEventArgs ? null : after)       // Activated→KeyUpの順で来た場合のみ通す(Activeted→KeyUp→KeyUpと来ても2回目のKeyUpは通さない)
+                    .Where(_ => _ == null)
+                    .Subscribe(_ => {
+                        this.mainListBox.ScrollIntoView(this.VM.ClipbordHistory.FirstOrDefault());
 
+                        this.mainListBox.Focus();
+                        var item = (ListBoxItem)(this.mainListBox.ItemContainerGenerator.ContainerFromItem(this.VM.ClipbordHistory.FirstOrDefault()));
+                        if (item != null)
+                        {
+                            item.Focus();
+                        }
+                    })
+            );
+        }
 
 
         public void ExtensionLoaded()
         {
-            var extensionItems = ((VM.MainWindowViewModel)this.DataContext).ExtensionItems;
+            var extensionItems = this.VM.ExtensionItems;
             this.extensionContextMenu.Items.Clear();
             this.AddExtensionMenuItem(this.extensionContextMenu.Items, extensionItems);
         }
@@ -65,7 +107,7 @@ namespace ClipboardExtender2.Views
                 {
                     menuItem.Command = new ViewModelCommand(() =>
                     {
-                        ((VM.MainWindowViewModel)this.DataContext).ExtensionPaste(item.Extension);
+                        this.VM.ExtensionPaste(item.Extension);
                     });
                 }
             }
@@ -73,9 +115,19 @@ namespace ClipboardExtender2.Views
             return r;
         }
 
+        private void mainWindow_Activated(object sender, EventArgs e)
+        {
+
+        }
+
         private void mainListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ((VM.MainWindowViewModel)this.DataContext).SelectedHistoryItems = this.mainListBox.SelectedItems.Cast<string>().ToArray();
+            this.VM.SelectedHistoryItems = this.mainListBox.SelectedItems.Cast<string>().ToArray();
+        }
+
+        private void mainWindow_Closed(object sender, EventArgs e)
+        {
+            this.rxDisposables.Dispose();
         }
     }
 }

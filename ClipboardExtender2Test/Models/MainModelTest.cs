@@ -41,22 +41,6 @@ namespace ClipboardExtender2Test.Models
 
 
 
-        [TestMethod]
-        public void TestSeletedHistoryItem()
-        {
-            Assert.AreEqual(null, this.model.SelectedHistoryItem);
-
-            this.model.SelectedHistoryItem = "hoge";
-            Assert.AreEqual("hoge", this.model.SelectedHistoryItem);
-            CollectionAssert.AreEqual(new[] { "SelectedHistoryItem" }, this.propertyChangedHistory,
-                "SelectedHistoryItemに値がセットされるとSelectedHistoryItemのPropertyChangedが発火する");
-
-            this.model.SelectedHistoryItem = "hoge";
-            CollectionAssert.AreEqual(new[] { "SelectedHistoryItem" }, this.propertyChangedHistory,
-                "同じ値がセットされてもPropertyChangedは発火しない");
-        }
-
-
 
         [TestMethod]
         public void TestHotKeyPushed()

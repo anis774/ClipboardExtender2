@@ -157,34 +157,22 @@ namespace ClipboardExtender2.Models
 
 
 
-        private string _SelectedHistoryItem;
-        /// <summary>
-        /// 選択されているクリップボードの履歴
-        /// </summary>
-        public string SelectedHistoryItem
-        {
-            get
-            {
-                return this._SelectedHistoryItem;
-            }
-            set
-            {
-                if (this._SelectedHistoryItem == value)
-                {
-                    return;
-                }
-                this._SelectedHistoryItem = value;
-                base.RaisePropertyChanged(() => SelectedHistoryItem);
-            }
-        }
-
-
-
+        private string[] _SelectedHistoryItems = new string[] { };
         /// <summary>
         /// 選択されているクリップボードの履歴(複数)
         /// 読取専用。変更しても表示に影響しない。
         /// </summary>
-        public string[] SelectedHistoryItems { private get; set; }
+        public string[] SelectedHistoryItems
+        {
+            private get
+            {
+                return this._SelectedHistoryItems;
+            }
+            set
+            {
+                this._SelectedHistoryItems = value;
+            }
+        }
 
 
 
@@ -205,8 +193,8 @@ namespace ClipboardExtender2.Models
         
         public void Paste()
         {
-            string text = this.SelectedHistoryItem;
-            Clipboard.SetText(text);
+            string text = this.SelectedHistoryItems.FirstOrDefault();
+            Clipboard.SetText(text == null ? string.Empty : text);
 
             this.foregroundWindowManager.RollbackForegroundWindow();
             System.Windows.Forms.SendKeys.SendWait("^v");
@@ -229,7 +217,6 @@ namespace ClipboardExtender2.Models
 
             extension.Run(args);
             this.History.Insert(0, args.Out.ToString());
-            this.SelectedHistoryItem = args.Out.ToString();
 
             if (!args.IsPasteCancel)
             {

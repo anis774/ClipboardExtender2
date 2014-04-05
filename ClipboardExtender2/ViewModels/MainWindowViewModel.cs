@@ -128,24 +128,6 @@ namespace ClipboardExtender2.ViewModels
         #endregion
 
 
-        #region SelectedHistoryItem変更通知プロパティ
-        public string SelectedHistoryItem
-        {
-            get
-            {
-                if (this.model == null) return string.Empty;
-                return this.model.SelectedHistoryItem;
-            }
-            set
-            { 
-                if (this.model == null || this.model.SelectedHistoryItem == value)
-                    return;
-                this.model.SelectedHistoryItem = value;
-            }
-        }
-        #endregion
-
-
         #region ExtensionItems変更通知プロパティ
         private DispatcherCollection<ExtensionTreeItem> _ExtensionItems;
         public DispatcherCollection<ExtensionTreeItem> ExtensionItems
