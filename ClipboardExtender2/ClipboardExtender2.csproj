@@ -108,6 +108,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Models\ClipboardChangedEventArgs.cs" />
+    <Compile Include="Models\ClipboardListener.cs" />
+    <Compile Include="Models\IClipboardListener.cs" />
+    <Compile Include="Models\IForegroundWindowManager.cs" />
+    <Compile Include="Models\IHotKey.cs" />
     <Compile Include="Views\TextFirstLineConverter.cs" />
     <Compile Include="Views\TextLineCountConverter.cs" />
     <Page Include="Views\MainWindow.xaml">

@@ -22,15 +22,13 @@ namespace ClipboardExtender2.Models
         private const string historyFilePath = ".\\history.dat";    // クリップボードの履歴ファイルのパス
         private const string extinsionPath = ".\\extension";        // 拡張を配置するパス
 
-        private ForegroundWindowManager foregroundWindowManager;    // フォアグラウンドウィンドウを監視、変更する
+        private IForegroundWindowManager foregroundWindowManager;    // フォアグラウンドウィンドウを監視、変更する
         private IDisposable history_CollectionChangedObserver;
 
 
 
-        public Model()
+        private Model()
         {
-            this.LoadHistory();
-
             // ClipboardExtender2をオンラインストレージに置いて使っている場合、
             // PCのシャットダウンでClipboardExtender2が終了される際に保存をするだけでは
             // オンラインストレージとの同期が終わらないうちにシャットダウンされデータの一部が消失することがある。
@@ -45,27 +43,80 @@ namespace ClipboardExtender2.Models
 
 
 
+        private static Model _Instance;
+        public static Model Instance
+        {
+            get
+            {
+                if (_Instance == null)
+                {
+                    _Instance = new Model();
+                }
+
+                return _Instance;
+            }
+        }
+
+
+
+        /// <summary>
+        /// テスト用
+        /// </summary>
+        public static void ClearInstance()
+        {
+            if (_Instance != null)
+            {
+                _Instance.Dispose();
+            }
+            _Instance = null;
+        }
+
+
+
         /// <summary>
         /// Windows固有の処理を含む初期化を行う
         /// </summary>
         /// <param name="windowHandle"></param>
         public void Initialize(IntPtr windowHandle)
         {
-            // クリップボードの監視を開始
-            this.ClipboardWatcher = new ClipboardWatcher();
-            this.ClipboardWatcher.StartListenClipboard(windowHandle);
+            this.Initialize(
+                windowHandle,
+                new ClipboardListener(windowHandle),
+                new HotKey(),
+                new ForegroundWindowManager(new[] { windowHandle })
+            );
+
+            this.LoadHistory();
+        }
+
+
+
+        public void Initialize(IntPtr windowHandle, IClipboardListener clipboardListener, IHotKey hotKey, IForegroundWindowManager foregroundWindowManager)
+        {
+             // クリップボードの監視を開始
+            if (clipboardListener != null)
+            {
+                this.ClipboardListener = clipboardListener;
+                this.ClipboardListener.Start();
+            }
 
             // グローバルホットキーの監視を開始
-            this.HotKey = new HotKey();
-            this.HotKey.ListenHotKey(
-                windowHandle,
-                System.Windows.Input.ModifierKeys.Control | System.Windows.Input.ModifierKeys.Shift,
-                System.Windows.Input.Key.B);
+            if (hotKey != null)
+            {
+                this.HotKey = hotKey;
+                this.HotKey.ListenHotKey(
+                    windowHandle,
+                    System.Windows.Input.ModifierKeys.Control | System.Windows.Input.ModifierKeys.Shift,
+                    System.Windows.Input.Key.B);
+            }
 
             // フォアグラウンドウィンドウの監視を開始
-            this.foregroundWindowManager = new ForegroundWindowManager(new[] { windowHandle });
+            if (foregroundWindowManager != null)
+            {
+                this.foregroundWindowManager = foregroundWindowManager;
+            }
 
-            this.loadingExtension(extinsionPath, this.ExtensionItems);
+            this.LoadingExtension(extinsionPath, this.ExtensionItems);           
         }
 
 
@@ -75,7 +126,7 @@ namespace ClipboardExtender2.Models
         /// </summary>
         /// <param name="dirPath"></param>
         /// <param name="extensionTreeItems"></param>
-        public void loadingExtension(string dirPath, ObservableSynchronizedCollection<ExtensionTreeItem> extensionTreeItems)
+        public void LoadingExtension(string dirPath, ObservableSynchronizedCollection<ExtensionTreeItem> extensionTreeItems)
         {
             foreach (var fileSystemInfo in Directory.GetFileSystemEntries(dirPath))
             {
@@ -84,7 +135,7 @@ namespace ClipboardExtender2.Models
                     var newExtensionTreeItem = new ExtensionTreeItem();
                     newExtensionTreeItem.Name = Path.GetFileNameWithoutExtension(fileSystemInfo);
                     extensionTreeItems.Add(newExtensionTreeItem);
-                    this.loadingExtension(fileSystemInfo, newExtensionTreeItem.Items);
+                    this.LoadingExtension(fileSystemInfo, newExtensionTreeItem.Items);
                 }
                 else if (".txt" != Path.GetExtension(fileSystemInfo))
                 {
@@ -103,29 +154,29 @@ namespace ClipboardExtender2.Models
 
         #region プロパティ
 
-        private ClipboardWatcher _ClipboardWatcher;
-        public ClipboardWatcher ClipboardWatcher
+        private IClipboardListener _ClipboardListener;
+        public IClipboardListener ClipboardListener
         {
-            get { return this._ClipboardWatcher; }
-            set
+            get { return this._ClipboardListener; }
+            private set
             {
-                if (null != this._ClipboardWatcher)
+                if (null != this._ClipboardListener)
                 {
-                    this._ClipboardWatcher.DrawClipboard -= this.clipboardWatcher_DrawClipboard;
-                    this._ClipboardWatcher.Dispose();
+                    this._ClipboardListener.ClipboardChanged -= this.ClipboardListener_DrawClipboard;
+                    this._ClipboardListener.Dispose();
                 }
-                this._ClipboardWatcher = value;
-                this._ClipboardWatcher.DrawClipboard += this.clipboardWatcher_DrawClipboard;
+                this._ClipboardListener = value;
+                this._ClipboardListener.ClipboardChanged += this.ClipboardListener_DrawClipboard;
             }
         }
 
 
 
-        private HotKey _HotKey;
-        public HotKey HotKey
+        private IHotKey _HotKey;
+        public IHotKey HotKey
         {
             get { return this._HotKey; }
-            set
+            private set
             {
                 if (null != this._HotKey)
                 {
@@ -286,16 +337,15 @@ namespace ClipboardExtender2.Models
         /// <summary>
         /// クリップボードの内容が変更されると発火する
         /// </summary>
-        private void clipboardWatcher_DrawClipboard(object sender, EventArgs e)
+        private void ClipboardListener_DrawClipboard(object sender, ClipboardChangedEventArgs e)
         {
-            var text = Clipboard.GetText();
-            if (string.IsNullOrEmpty(text)) { return; }
+            if (string.IsNullOrEmpty(e.Text)) { return; }
 
             // 既に同じテキストがあれば先頭に移動する
-            int index = this.History.IndexOf(text);
+            int index = this.History.IndexOf(e.Text);
             if (-1 == index)
             {
-                this.History.Insert(0, text);
+                this.History.Insert(0, e.Text);
             }
             else
             {
@@ -322,13 +372,24 @@ namespace ClipboardExtender2.Models
         /// </summary>
         public void Dispose()
         {
-            this.ClipboardWatcher.DrawClipboard -= this.clipboardWatcher_DrawClipboard;
-            this.ClipboardWatcher.Dispose();
+            if (this.ClipboardListener != null)
+            {
+                this.ClipboardListener.ClipboardChanged -= this.ClipboardListener_DrawClipboard;
+                this.ClipboardListener.Dispose();
+            }
        
             this.history_CollectionChangedObserver.Dispose();
-            
-            this.HotKey.HotKeyPushed -= this.hotKey_HotKeyPush;
-            this.HotKey.Dispose();
+
+            if (this.HotKey != null)
+            {
+                this.HotKey.HotKeyPushed -= this.hotKey_HotKeyPush;
+                this.HotKey.Dispose();
+            }
+
+            if (this.foregroundWindowManager != null)
+            {
+                this.foregroundWindowManager.Dispose();
+            }
             
             this.SaveHistory();
         }

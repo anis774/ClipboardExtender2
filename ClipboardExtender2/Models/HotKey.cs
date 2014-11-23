@@ -13,7 +13,7 @@ namespace ClipboardExtender2.Models
     /// グローバルホットキーを登録するクラス。
     /// 使用後は必ずDisposeすること。
     /// </summary>
-    public class HotKey: IDisposable
+    public class HotKey: IDisposable, IHotKey
     {
         private HwndSource hwndSource = null;
         private int id;

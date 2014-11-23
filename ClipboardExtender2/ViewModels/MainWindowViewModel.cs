@@ -64,7 +64,7 @@ namespace ClipboardExtender2.ViewModels
 
         public void Initialize()
         {
-            this.model = new Model();
+            this.model = Model.Instance;
             this.ClipbordHistory = new DispatcherCollection<string>(this.model.History, DispatcherHelper.UIDispatcher);
             this.ExtensionItems = new DispatcherCollection<ExtensionTreeItem>(this.model.ExtensionItems, DispatcherHelper.UIDispatcher);
 

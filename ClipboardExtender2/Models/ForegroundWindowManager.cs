@@ -8,7 +8,7 @@ using System.Reactive.Linq;
 
 namespace ClipboardExtender2.Models
 {
-    public class ForegroundWindowManager : IDisposable
+    public class ForegroundWindowManager : IDisposable, ClipboardExtender2.Models.IForegroundWindowManager
     {
         private IDisposable watchObserver;
         private IEnumerable<IntPtr> ignoreHandles;

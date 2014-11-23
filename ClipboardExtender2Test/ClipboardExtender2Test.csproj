@@ -42,6 +42,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -58,6 +59,9 @@
   <ItemGroup>
     <Compile Include="Models\ExtensionArgsTest.cs" />
     <Compile Include="Models\MainModelTest.cs" />
+    <Compile Include="Models\Mock\ClipboardListenerMock.cs" />
+    <Compile Include="Models\Mock\ForegroundWindowManagerMock.cs" />
+    <Compile Include="Models\Mock\HotKeyMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Views\TextFirstLineConverterTest.cs" />
     <Compile Include="Views\TextLineCountConverterTest.cs" />
